@@ -1,5 +1,5 @@
 "use client";
-import {useState} from "react";
+import {useState,useEffect} from "react";
 import ToolCard from "@/components/ToolCard";
 
 export default function Audit(){
@@ -21,6 +21,38 @@ export default function Audit(){
     )
 
     const[tools,setTools]=useState<Tool[]>([])
+    const[filter,setFilter]=useState("All")
+    const [search, setSearch] = useState("")
+    const[isLoaded,setIsLoaded]=useState(false);
+
+
+    //save tools to localstorage when tools state changes
+    useEffect(()=>{
+        if(isLoaded){
+         localStorage.setItem("tools",JSON.stringify(tools))
+        }
+    },[tools,isLoaded])
+
+    //loads tools from local storage when page opens
+    useEffect(()=>{
+        const data=localStorage.getItem("tools");
+        if(data){
+            setTools(JSON.parse(data));
+        }
+        setIsLoaded(true);
+    },[])
+        
+
+    const filteredTools=filter==="All"?
+    tools:
+    tools.filter((tool)=>tool.plan.toLowerCase()===filter.toLowerCase())
+
+
+    const searchedTools = filteredTools.filter((tool) =>
+       tool.toolName.toLowerCase().includes(search.toLowerCase())
+     )
+
+
     return(
         <div className="min-h-screen  mx-auto w-full  max-w-lg flex flex-col items-center bg-gray-100  shadow p-4 ">
             <h1 className="text-2xl font-bold m-4">SaaS Audit Tool</h1>
@@ -67,6 +99,8 @@ export default function Audit(){
             />
             <br />
 
+
+        <div className="flex gap-3">
              <button onClick={()=>{
                     
              if(!form.toolName || !form.cost || !form.plan || !form.seats || !form.useCase) return;
@@ -82,18 +116,64 @@ export default function Audit(){
              } 
 
             } 
-                className="bg-green-400 rounded px-3 py-1 text-white font-bold hover:bg-green-600 cursor-pointer">
+                className="bg-green-500 rounded px-3 py-1 text-white font-bold hover:bg-green-600 cursor-pointer">
             Add Tool
              </button>
-
-             <p className="text-lg font-semibold m-4">Tools added: {tools.length}</p>
             
-            <h2 className="text-xl font-bold mb-3">
-                Added Tools
-            </h2>
+            <button onClick={()=>{
+                setTools([]);
+                localStorage.removeItem("tools");
+            }}
+                className="bg-red-500 rounded px-3 py-1 text-white font-bold hover:bg-red-600 cursor-pointer ">
+
+                Clear All
+            </button>
+         </div>
+
+
+            <div className="flex justify-between items-center gap-3 mt-3">
+
+            <button onClick={()=>setFilter("All")}
+                className="bg-blue-500 rounded px-3 py-1 text-white font-bold hover:bg-blue-600 cursor-pointer">
+                    All Tools
+             </button>
+
+            <button onClick={()=>setFilter("Free")}
+                className="bg-blue-500 rounded px-3 py-1 text-white font-bold hover:bg-blue-600 cursor-pointer">
+                    Free Tools
+            </button>
+
+            <button onClick={()=>setFilter("Paid")}
+                className="bg-blue-500 rounded px-3 py-1 text-white font-bold hover:bg-blue-600 cursor-pointer">
+                    Paid Tools
+            </button>
+         </div>
+
+
+           <input
+                type="text"
+                placeholder="Search tools..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="bg-white shadow p-2 rounded mt-5"
+             />
+
+          
             {
-   
-                tools.map((tool,index)=>(
+              tools.length===0?
+              <p className="text-gray-600 font-bold mt-5">No tools added yet.</p>
+              
+            :
+            <div>
+               <p className="text-lg font-semibold m-4 ">Tools added: {tools.length}</p> 
+
+               {
+                searchedTools.length === 0 ? (
+                    <p className="text-gray-500 mt-4">
+                        No matching tools found
+                    </p>
+                ) :
+                searchedTools.map((tool,index)=>(
                    <ToolCard
                    key={index}
                    tool={tool}
@@ -104,8 +184,10 @@ export default function Audit(){
                 }
                    />
                 ))
+
                  }
-                            
+            </div>
+        }              
                                     
         </div>
     );

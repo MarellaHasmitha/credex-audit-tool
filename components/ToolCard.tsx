@@ -17,7 +17,7 @@ export default function ToolCard({
 }: ToolCardProps) {
 
   return (
-    <div className="border p-3 rounded m-3 w-full bg-white shadow hover:shadow-lg transition ">
+    <div className="w-full max-w-lg min-h-[220px]border p-3 rounded m-3  bg-white shadow hover:shadow-lg transition ">
 
       <p>Tool Name: {tool.toolName}</p>
 
@@ -27,11 +27,11 @@ export default function ToolCard({
 
       <p>Seats: {tool.seats}</p>
 
-      <p>Use Case: {tool.useCase}</p>
+      <p className="wrap-break-word">Use Case: {tool.useCase}</p>
 
       <button
         onClick={onRemove}
-        className="mt-2 bg-red-400 rounded px-3 py-1 text-white shadow cursor-pointer hover:bg-red-600 font-bold"
+        className="mt-2 bg-red-500 rounded px-3 py-1 text-white shadow cursor-pointer hover:bg-red-700 font-bold"
       >
         Remove
       </button>

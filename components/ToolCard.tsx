@@ -8,11 +8,15 @@ type Tool = {
 
 type ToolCardProps = {
   tool: Tool;
+  recommendation: string;
+  hasDuplicate: boolean;
   onRemove: () => void;
 };
 
 export default function ToolCard({
   tool,
+  recommendation,
+  hasDuplicate,
   onRemove
 }: ToolCardProps) {
 
@@ -27,6 +31,17 @@ export default function ToolCard({
 
       <p>Seats: {tool.seats}</p>
 
+      <p className=" text-orange-300">
+          Recommendation: {recommendation}
+        </p>
+      
+      {hasDuplicate && (
+          <p className="text-orange-600 font-bold">
+            Possible Duplicate Use Case
+          </p>
+        )}
+
+        
       <p className="wrap-break-word">Use Case: {tool.useCase}</p>
 
       <button

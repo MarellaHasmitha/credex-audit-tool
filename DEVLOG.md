@@ -121,3 +121,77 @@ Build a dynamic form where users can add, view, and remove SaaS tools.
 * Understood state updates
 * Fixed localStorage save/load flow
 * Combined filter + search correctly
+
+# Day 4 — Dynamic Pricing Logic + Real Audit Form
+
+## What I Built
+
+Today I improved the audit form to behave more like a real SaaS audit product.
+
+### 1. Tool Selection
+- Replaced manual tool input with dynamic tool selection using pricing data.
+- Connected selected tool with real tool database.
+
+### 2. Dynamic Plan Selection
+- Used `.find()` to get the selected tool from pricing data.
+- Rendered plans dynamically based on selected tool.
+- Example:
+  - :contentReference[oaicite:0]{index=0} → Free, Pro, Team
+  - :contentReference[oaicite:1]{index=1} ChatGPT → Free, Plus, Team
+
+### 3. Auto Fill Logic
+Implemented auto-fill system:
+
+#### Use Case
+- Automatically fills based on selected tool.
+- Example:
+  - Canva → Design
+  - ChatGPT → AI Productivity
+
+#### Cost
+- Automatically calculated using:
+
+cost = pricePerUser × seats
+
+- Updates whenever:
+  - plan changes
+  - seats change
+
+### 4. Form Validation Improvements
+- Removed unnecessary global form error.
+- Kept field-level validation only.
+- Clears errors dynamically on valid selection.
+
+### 5. React Concepts Learned
+Today I practiced:
+
+- `find()`
+- `map()`
+- controlled components
+- `onChange`
+- derived state
+- object updates using spread operator
+- dynamic dropdown rendering
+
+## Problems Faced
+
+- Confused between `filter()` and `find()`
+- TypeScript property mismatch (`tool` vs `selectedTool`)
+- Data field mismatch (`category` vs `useCase`)
+- Handling derived values like cost
+
+## How I Solved Them
+
+- Used `find()` for single selected tool
+- Used `selectedTool?.plans`
+- Used optional chaining to avoid crashes
+- Mapped pricing data fields into form state
+
+## Next Plan
+
+Tomorrow I will build:
+
+- Real audit engine
+- Alternative recommendations
+- Savings calculation
+- Tool comparison cards

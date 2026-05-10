@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Hero(){
   return (
     <div className="p-10 min-h-screen flex flex-col justify-center items-center bg-black text-white text-center">
@@ -11,9 +13,12 @@ export default function Hero(){
             and maximize ROI with actionable insights. 
             Take control of your AI costs today!
         </p>
-        <button className="bg-green-400 rounded px-3 py-1 text-white font-bold hover:bg-green-600 cursor-pointer">
-            Start
-        </button>
+        <Link href="/audit">
+            <button className="bg-green-400 rounded px-3 py-1 text-white font-bold hover:bg-green-600 cursor-pointer">
+                Start
+            </button>
+        </Link>
+
     </div>
   )
 }

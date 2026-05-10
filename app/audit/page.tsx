@@ -1,6 +1,13 @@
 "use client";
 import {useState,useEffect} from "react";
 import ToolCard from "@/components/ToolCard";
+import SummaryCards from "@/components/SummaryCards";
+import { 
+    getAuditRecommendation,
+    hasDuplicateUseCase 
+} 
+    from "@/lib/audit";
+import {pricingData} from "@/data/pricing"
 
 export default function Audit(){
     type Tool={
@@ -10,6 +17,15 @@ export default function Audit(){
         seats:string,
         useCase:string
     }
+
+    type Errors={
+        toolName:string,
+        cost:string,
+        plan:string,
+        seats:string,
+        useCase:string
+    }
+
     const[form,setForm]=useState<Tool>(
         {
             toolName:"",
@@ -20,11 +36,23 @@ export default function Audit(){
         }
     )
 
+    const[errors,setErrors]=useState<Errors>(
+        {
+            toolName:"",
+            cost:"",
+            plan:"",
+            seats:"",
+            useCase:""
+        }
+    )
+
+   
+
     const[tools,setTools]=useState<Tool[]>([])
     const[filter,setFilter]=useState("All")
     const [search, setSearch] = useState("")
     const[isLoaded,setIsLoaded]=useState(false);
-
+    const selectedTool=pricingData.find((tool)=>tool.name===form.toolName)
 
     //save tools to localstorage when tools state changes
     useEffect(()=>{
@@ -44,66 +72,223 @@ export default function Audit(){
         
 
     const filteredTools=filter==="All"?
-    tools:
-    tools.filter((tool)=>tool.plan.toLowerCase()===filter.toLowerCase())
+    tools:filter === "Free"?
+    tools.filter(tool=>Number(tool.cost)===0)
+    :tools.filter(tool=>Number(tool.cost)>0)
 
 
     const searchedTools = filteredTools.filter((tool) =>
        tool.toolName.toLowerCase().includes(search.toLowerCase())
      )
 
+    const totalCost = tools.reduce((sum, tool) => {
+            return sum + Number(tool.cost);
+       }, 0);
+
+    const totalSeats = tools.reduce((sum, tool) => {
+            return sum + Number(tool.seats);
+       }, 0);
+
+    const enterpriseTools = tools.reduce((count, tool) => {
+            if (tool.plan.toLowerCase() === "enterprise") {
+                return count + 1;
+            }
+
+            return count;
+            }, 0);
+
+
 
     return(
         <div className="min-h-screen  mx-auto w-full  max-w-lg flex flex-col items-center bg-gray-100  shadow p-4 ">
             <h1 className="text-2xl font-bold m-4">SaaS Audit Tool</h1>
 
-            <input type="text"
-            placeholder="Enter Tool Name"
-            value={form.toolName}  className="bg-white shadow p-2 rounded mb-2"
-            onChange={(e)=>
-            setForm({...form,toolName:e.target.value})}
-            />
+
+            <div>
+              <SummaryCards
+                    totalTools={tools.length}
+                    totalCost={totalCost}
+                    totalSeats={totalSeats}
+                    enterpriseTools={enterpriseTools}
+                />
+            </div>
+           
+            <select
+                value={form.toolName}
+                className="bg-white shadow p-2 rounded"
+                onChange={(e) => {
+                    setForm({ ...form, 
+                      toolName: e.target.value,
+                      useCase:selectedTool?selectedTool.category:"",
+                      plan:"",
+                      cost:"" });
+                    setErrors({
+                    ...errors,
+                    toolName: ""
+                    });
+                }}
+                >
+                <option value="">Select Tool</option>
+
+                {pricingData.map((tool) => (
+                    <option
+                    key={tool.name}
+                    value={tool.name}
+                    >
+                    {tool.name}
+                    </option>
+                ))}
+                </select>
+            {
+            errors.toolName &&(
+                <p className="text-red-500 text-sm">{errors.toolName}</p>
+            )}
              <br />
 
-            <input type="text"
-            placeholder="Enter cost"
-            value={form.cost}  className="bg-white shadow p-2 rounded mb-2"
-            onChange={(e)=>
-            setForm({...form,cost:e.target.value})}
-            />
-            <br />
 
-            <input type="text"
-            placeholder="Enter plan"
-            value={form.plan}  className="bg-white shadow p-2 rounded mb-2"
-            onChange={(e)=>
-            setForm({...form,plan:e.target.value})}
-            />
+            <select
+            value={form.plan}
+            className="bg-white shadow p-2 rounded"
+            onChange={(e) => {
+                const selectedPlanName=e.target.value;
+
+                const selectedPlan = selectedTool?.plans.find(
+                (plan) => plan.name === selectedPlanName
+                );
+
+                const totalCost = selectedPlan
+                    ? selectedPlan.pricePerUser * Number(form.seats)
+                    : 0;
+
+                setForm({
+                    ...form,
+                    plan: selectedPlanName,
+                    cost: totalCost.toString(),
+                });
+                setErrors({
+                ...errors,
+                plan: ""
+                });
+            }}
+            >
+            <option value="">Select a Plan</option>
+
+            {selectedTool?.plans.map((plan, index) => (
+                <option
+                key={index}
+                value={plan.name}
+                >
+                {plan.name}
+                </option>
+            ))
+            
+            }
+            </select>
+            {errors.plan &&(
+                <p className="text-red-500 text-sm">{errors.plan}</p>
+            )}
                 <br />  
 
 
-            <input type="text"
-            placeholder="Enter No of seats"
-            value={form.seats}  className="bg-white shadow p-2 rounded mb-2"
-            onChange={(e)=>
-            setForm({...form,seats:e.target.value})}
-            />
+           <input
+                type="number"
+                placeholder="Seats"
+                value={form.seats}
+                className="bg-white shadow p-2 rounded mb-2"
+                onChange={(e) => {
+                    const seatsValue = e.target.value;
+
+                    const selectedPlan = selectedTool?.plans.find(
+                    (plan) => plan.name === form.plan
+                    );
+
+                    const totalCost = selectedPlan
+                    ? selectedPlan.pricePerUser * Number(seatsValue)
+                    : 0;
+
+                    setForm({
+                    ...form,
+                    seats: seatsValue,
+                    cost: totalCost.toString(),
+                    });
+
+                    setErrors({
+                    ...errors,
+                    seats: "",
+                    });
+                }}
+                />
            <br />
 
 
-            <input type="text"
-            placeholder="Enter Use Case"
-            value={form.useCase}  className="bg-white shadow p-2 rounded mb-2"
-            onChange={(e)=>
-            setForm({...form,useCase:e.target.value})}
-            />
-            <br />
+             <input
+                type="text"
+                placeholder="Cost"
+                value={form.cost}
+                readOnly
+                className="bg-gray-100 shadow p-2 rounded mb-2"
+         />
+
+            <input
+                type="text"
+                placeholder="Use Case"
+                value={form.useCase}
+                readOnly
+                className="bg-gray-100 shadow p-2 rounded mb-2"
+
+                />
 
 
+          
         <div className="flex gap-3">
              <button onClick={()=>{
-                    
-             if(!form.toolName || !form.cost || !form.plan || !form.seats || !form.useCase) return;
+
+              if (form.toolName==="") {
+                    setErrors({
+                        ...errors,
+                        toolName: "Select Tool Name"
+                    });
+                
+                    return;
+                }
+            else{
+                setErrors({
+                        ...errors,
+                        toolName: ""
+                    });
+            }
+
+                if (isNaN(Number(form.cost)) || Number(form.cost) < 0) {
+                    setErrors({
+                        ...errors,
+                        cost: "Invalid cost"
+                    });
+
+                    return;
+                }
+
+                if (isNaN(Number(form.seats)) || Number(form.seats) < 1) {
+                    setErrors({
+                        ...errors,
+                        seats: "Invalid seats"
+                    });
+
+                    return;
+                }
+                if (form.useCase.trim().length<5) {
+                    setErrors({
+                        ...errors,
+                        useCase: "Use case must have at least 5 characters"
+                    });
+                    return;
+                }
+                setErrors({
+                    toolName: "",
+                    cost: "",
+                    plan: "",
+                    seats: "",
+                    useCase: ""
+                });
 
                 setTools([...tools,form]);
                 setForm({
@@ -177,6 +362,8 @@ export default function Audit(){
                    <ToolCard
                    key={index}
                    tool={tool}
+                   recommendation={getAuditRecommendation(tool)}
+                   hasDuplicate={hasDuplicateUseCase(tool,tools)}
                    onRemove={()=>
                    {
                     setTools(tools.filter((_, i) => i !== index))

@@ -23,7 +23,7 @@ export default function SummaryCards(
 
         <div className="bg-white shadow rounded p-3 text-center">
             <p>Total Cost</p>
-            <h2 className="font-bold text-xl">₹{totalCost}</h2>
+            <h2 className="font-bold text-xl">${totalCost}</h2>
         </div>
 
         <div className="bg-white shadow rounded p-3 text-center">

@@ -195,3 +195,63 @@ Tomorrow I will build:
 - Alternative recommendations
 - Savings calculation
 - Tool comparison cards
+
+
+
+## Day 5 — Audit Engine + Result Dashboard
+
+### Completed
+
+- Built core audit logic in `lib/audit.ts`
+- Added free plan handling
+- Added duplicate use-case detection
+- Added seat-based plan grouping
+- Added individual vs business plan comparison
+- Added flat pricing vs per-user pricing logic
+- Added best cheaper alternative recommendation
+- Added savings calculation for each tool
+- Added total savings calculation
+
+### UI Work
+
+- Created separate audit result page
+- Added result cards for each tool
+- Added status badges:
+  - Savings Found
+  - Free Tool
+  - Optimized
+- Added empty states
+- Added loading state
+- Added Back to Audit navigation
+- Improved result page layout and card design
+
+### Testing Done
+
+- Single tool testing
+- Duplicate tool testing
+- Mixed category testing
+- Free tool testing
+- Business plan testing
+- Edge case validation
+
+### Learned
+
+- Real-world SaaS pricing logic
+- Business rule implementation
+- TypeScript type handling
+- Conditional rendering
+- Route-based page separation
+
+### Challenges
+
+- TypeScript type errors
+- Plan matching issues
+- Null state handling
+- Pricing comparison bugs
+
+### Solutions
+
+- Created shared types
+- Improved plan matching logic
+- Added loading + null checks
+- Tested multiple edge cases

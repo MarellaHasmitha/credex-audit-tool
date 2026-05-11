@@ -2,12 +2,8 @@
 import {useState,useEffect} from "react";
 import ToolCard from "@/components/ToolCard";
 import SummaryCards from "@/components/SummaryCards";
-import { 
-    getAuditRecommendation,
-    hasDuplicateUseCase 
-} 
-    from "@/lib/audit";
 import {pricingData} from "@/data/pricing"
+import { useRouter } from "next/navigation";
 
 export default function Audit(){
     type Tool={
@@ -53,6 +49,19 @@ export default function Audit(){
     const [search, setSearch] = useState("")
     const[isLoaded,setIsLoaded]=useState(false);
     const selectedTool=pricingData.find((tool)=>tool.name===form.toolName)
+    const [auditResults, setAuditResults] = useState<any[]>([]);
+
+    const router = useRouter();
+    //Handle audit button logic
+    function handleAudit() {
+        localStorage.setItem(
+            "auditTools",
+            JSON.stringify(tools)
+        );
+
+        router.push("/audit/result");
+        }
+
 
     //save tools to localstorage when tools state changes
     useEffect(()=>{
@@ -90,13 +99,12 @@ export default function Audit(){
        }, 0);
 
     const enterpriseTools = tools.reduce((count, tool) => {
-            if (tool.plan.toLowerCase() === "enterprise") {
+           const seats = Number(tool.seats);
+            if (seats > 4) {
                 return count + 1;
             }
-
-            return count;
-            }, 0);
-
+         return count;
+    }, 0);
 
 
     return(
@@ -113,13 +121,24 @@ export default function Audit(){
                 />
             </div>
            
+
+           {/*Form inputs*/}
             <select
                 value={form.toolName}
-                className="bg-white shadow p-2 rounded"
+                className="w-full px-3 py-3  rounded-lg shadow bg-white"
+                
                 onChange={(e) => {
+
+                     const selectedName = e.target.value;
+
+                    const tool = pricingData.find(
+                    (item) => item.name === selectedName
+                    );
+
+                
                     setForm({ ...form, 
-                      toolName: e.target.value,
-                      useCase:selectedTool?selectedTool.category:"",
+                      toolName: selectedName,
+                      useCase:tool?tool.category:"",
                       plan:"",
                       cost:"" });
                     setErrors({
@@ -146,19 +165,22 @@ export default function Audit(){
              <br />
 
 
+
+
             <select
             value={form.plan}
-            className="bg-white shadow p-2 rounded"
+            className="w-full px-1 py-3  rounded-lg shadow bg-white"
             onChange={(e) => {
                 const selectedPlanName=e.target.value;
 
                 const selectedPlan = selectedTool?.plans.find(
                 (plan) => plan.name === selectedPlanName
                 );
-
+                
                 const totalCost = selectedPlan
-                    ? selectedPlan.pricePerUser * Number(form.seats)
+                    ? selectedPlan.price * Number(form.seats)
                     : 0;
+               
 
                 setForm({
                     ...form,
@@ -191,19 +213,19 @@ export default function Audit(){
 
 
            <input
-                type="number"
+                type="number" min="1"
                 placeholder="Seats"
                 value={form.seats}
-                className="bg-white shadow p-2 rounded mb-2"
+                className="w-full px-3 py-2  rounded-lg shadow bg-white"
                 onChange={(e) => {
                     const seatsValue = e.target.value;
-
+                                    
                     const selectedPlan = selectedTool?.plans.find(
                     (plan) => plan.name === form.plan
                     );
 
                     const totalCost = selectedPlan
-                    ? selectedPlan.pricePerUser * Number(seatsValue)
+                    ? selectedPlan.price * Number(seatsValue)
                     : 0;
 
                     setForm({
@@ -216,32 +238,38 @@ export default function Audit(){
                     ...errors,
                     seats: "",
                     });
+                    return;
                 }}
                 />
+                 {errors.seats &&(
+                <p className="text-red-500 text-sm">{errors.seats}</p>
+            )}
            <br />
 
 
              <input
                 type="text"
-                placeholder="Cost"
+                placeholder="$ Cost"
                 value={form.cost}
                 readOnly
-                className="bg-gray-100 shadow p-2 rounded mb-2"
+                className="w-full px-3 py-2 rounded-lg shadow bg-white cursor-not-allowed"
          />
+         <br />
 
             <input
                 type="text"
                 placeholder="Use Case"
                 value={form.useCase}
                 readOnly
-                className="bg-gray-100 shadow p-2 rounded mb-2"
+                className="w-full px-3 py-2  rounded-lg shadow bg-white cursor-not-allowed"
 
                 />
-
+            <br/>
 
           
         <div className="flex gap-3">
-             <button onClick={()=>{
+        <button onClick={()=>
+        {
 
               if (form.toolName==="") {
                     setErrors({
@@ -250,13 +278,30 @@ export default function Audit(){
                     });
                 
                     return;
-                }
+                  }
             else{
                 setErrors({
                         ...errors,
                         toolName: ""
                     });
             }
+             
+            if (form.plan==="") {
+                    setErrors({
+                        ...errors,
+                        plan: "Select Plan"
+                    });
+                
+                    return;
+                }
+            else{
+                setErrors({
+                        ...errors,
+                       plan: ""
+                    });
+            }
+
+
 
                 if (isNaN(Number(form.cost)) || Number(form.cost) < 0) {
                     setErrors({
@@ -266,22 +311,27 @@ export default function Audit(){
 
                     return;
                 }
-
-                if (isNaN(Number(form.seats)) || Number(form.seats) < 1) {
+                else{
                     setErrors({
                         ...errors,
-                        seats: "Invalid seats"
+                        cost: ""
+                    });
+                }
+
+                if (!(form.seats)) {
+                    setErrors({
+                        ...errors,
+                        seats: "Seats value must be given",
                     });
 
                     return;
-                }
-                if (form.useCase.trim().length<5) {
-                    setErrors({
+                    }
+                setErrors({
                         ...errors,
-                        useCase: "Use case must have at least 5 characters"
+                       seats: ""
                     });
-                    return;
-                }
+                
+                
                 setErrors({
                     toolName: "",
                     cost: "",
@@ -300,19 +350,32 @@ export default function Audit(){
                 })
              } 
 
-            } 
-                className="bg-green-500 rounded px-3 py-1 text-white font-bold hover:bg-green-600 cursor-pointer">
+        } 
+        className="bg-green-500 rounded px-3 py-1 text-white font-bold hover:bg-green-600 cursor-pointer">
             Add Tool
-             </button>
+       </button>
             
-            <button onClick={()=>{
+
+        {/*clear all button*/}
+        <button onClick={()=>{
                 setTools([]);
                 localStorage.removeItem("tools");
             }}
                 className="bg-red-500 rounded px-3 py-1 text-white font-bold hover:bg-red-600 cursor-pointer ">
 
                 Clear All
-            </button>
+        </button>
+
+         {/* Audit button*/}   
+        <button
+               onClick={handleAudit}
+               className="bg-green-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-green-600 font-bold"
+             >
+              Audit Tools
+        </button>
+
+
+        {/*filter tools*/}
          </div>
 
 
@@ -332,22 +395,27 @@ export default function Audit(){
                 className="bg-blue-500 rounded px-3 py-1 text-white font-bold hover:bg-blue-600 cursor-pointer">
                     Paid Tools
             </button>
+
          </div>
 
 
+        {/*search Button*/}
            <input
                 type="text"
                 placeholder="Search tools..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="bg-white shadow p-2 rounded mt-5"
+                className="bg-white shadow p-2 rounded mt-5 "
              />
 
-          
-            {
+
+        {/*Result of search,filter toolcard*/} 
+        {
               tools.length===0?
-              <p className="text-gray-600 font-bold mt-5">No tools added yet.</p>
-              
+              <div>
+              <p className="text-gray-600 font-bold mt-5 text-center">No tools added yet.</p>
+              <p className="text-gray-600 font-bold text-center"> Add your SaaS tools to start the audit.</p>
+              </div>
             :
             <div>
                <p className="text-lg font-semibold m-4 ">Tools added: {tools.length}</p> 
@@ -362,8 +430,6 @@ export default function Audit(){
                    <ToolCard
                    key={index}
                    tool={tool}
-                   recommendation={getAuditRecommendation(tool)}
-                   hasDuplicate={hasDuplicateUseCase(tool,tools)}
                    onRemove={()=>
                    {
                     setTools(tools.filter((_, i) => i !== index))
@@ -375,7 +441,7 @@ export default function Audit(){
                  }
             </div>
         }              
-                                    
+                          
         </div>
     );
 }

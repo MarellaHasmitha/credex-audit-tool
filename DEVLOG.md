@@ -255,3 +255,133 @@ Tomorrow I will build:
 - Improved plan matching logic
 - Added loading + null checks
 - Tested multiple edge cases
+
+
+# Day 6 — Backend Integration + Product Features
+
+## What I Built Today
+
+### 1. AI Summary Backend API
+Built:
+
+app/api/summary/route.ts
+
+Learned:
+- Why backend APIs are needed
+- Difference between GET and POST
+- How frontend sends data using fetch()
+- How backend receives data using request.json()
+- How to return JSON response
+
+Implemented:
+- Audit data sent from frontend
+- Backend generates fallback summary
+- Summary returned to UI
+
+
+### 2. Lead Capture System
+Built:
+
+components/LeadForm.tsx
+app/api/leads/route.ts
+
+Integrated with Supabase.
+
+Features:
+- User enters:
+  - Name
+  - Email
+  - Company
+  - Team Size
+- Data stored in database
+
+Learned:
+- Form state using object
+- Dynamic input handling
+- Reusable form architecture
+- POST request to backend
+- Saving data in Supabase
+
+
+### 3. Shareable Audit Results
+Built:
+
+app/api/auditRes/route.ts
+app/auditRes/[id]/page.tsx
+
+Features:
+- Audit results saved in Supabase
+- Unique audit ID generated
+- Shareable URLs created
+
+Example:
+
+/auditRes/{id}
+
+Learned:
+- UUID identifiers
+- Dynamic routing in Next.js
+- Route params
+- Fetching saved data from database using ID
+
+
+### 4. Result Page Improvements
+Added:
+- Lead form on result page
+- Back to Audit button
+- Alternative tool fallback handling
+
+Learned:
+- Conditional rendering
+- Cleaner component separation
+- Production-style UX flow
+
+
+## Problems I Faced Today
+
+- Confusion between API routes and page routes
+- 405 errors while testing POST routes
+- Route conflicts in Next.js
+- Params handling in dynamic routes
+- Supabase import/export issues
+
+How I solved them:
+- Separated API folder and page folder correctly
+- Fixed routing structure
+- Corrected Supabase imports
+- Used async params correctly
+
+
+## What I Learned Today
+
+- Backend architecture in Next.js
+- POST request lifecycle
+- Supabase database integration
+- Lead generation product thinking
+- Shareable links architecture
+- Difference between localStorage and database storage
+
+
+## Plan for Tomorrow
+
+### Final Testing
+Test:
+- Add tool
+- Remove tool
+- Remove all tools
+- Audit logic
+- Summary generation
+- Lead form submission
+- Shareable URLs
+
+### Deployment
+- Push final code to GitHub
+- Deploy on Vercel
+
+### Documentation
+Write:
+- README.md
+- Project architecture
+- Features
+- Setup instructions
+- Screenshots

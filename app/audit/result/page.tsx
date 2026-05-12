@@ -2,11 +2,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { auditAllTools } from "@/lib/audit";
+import LeadForm from "@/components/LeadForm";
 
 export default function AuditResultPage() {
   const [auditData, setAuditData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
 
   useEffect(() => {
   const storedTools = localStorage.getItem("auditTools");
@@ -102,32 +104,7 @@ return (
               Back to Audit
       </button>
 
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="border rounded-lg p-4 shadow bg-white">
-            <p className="text-gray-500 text-sm">Tools Audited</p>
-            <h2 className="text-2xl font-bold">
-              {auditData.results.length}
-            </h2>
-          </div>
-
-            <div className="border rounded-lg p-4 shadow bg-white">
-              <p className="text-gray-500 text-sm">Total Savings</p>
-              <h2 className="text-2xl font-bold text-green-700">
-                ${auditData.totalSavings.toFixed(2)}
-              </h2>
-            </div>
-
-            <div className="border rounded-lg p-4 shadow bg-white">
-              <p className="text-gray-500 text-sm">Optimized Tools</p>
-              <h2 className="text-2xl font-bold">
-                {
-                  auditData.results.filter(
-                    (result: any) => result.savings === 0
-                  ).length
-                }
-              </h2>
-            </div>
-     </div>
+  
 
 
     </div>
@@ -194,14 +171,15 @@ return (
       <div className="mt-8 border-t pt-4">
         <h2 className="text-2xl font-bold">
           Total Savings: $
-          {auditData.totalSavings.toFixed(2)}
+          {auditData.totalMonthlySavings.toFixed(2)}
         </h2>
 
         <p className="mt-2">
           {auditData.finalMessage}
         </p>
       </div>
-  
+    
+    <LeadForm />
 
     </div>
   );

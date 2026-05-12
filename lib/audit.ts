@@ -208,7 +208,7 @@ function auditSingleTool(
       alternativeCost: 0,
       savings: 0,
       message: duplicateUseCase
-        ? "You may be using multiple tools for the same purpose, but no cheaper alternative was found."
+        ? "You may be using multiple tools for the same purpose"
         : "Already optimized. No cheaper alternative found.",
     };
   }
@@ -222,8 +222,8 @@ function auditSingleTool(
     alternativeCost: bestAlternative.alternativeCost,
     savings: bestAlternative.savings,
     message: duplicateUseCase
-      ? "You may be using multiple tools for the same purpose. Consider switching to this cheaper alternative."
-      : "Cheaper alternative found.",
+      ? "You may be using multiple tools for the same purpose. Consider using one cheaper alternative tool for a purpose."
+      :  "Cheaper alternative found.",
   };
 }
 
@@ -233,17 +233,24 @@ export function auditAllTools(tools: AddedTool[]) {
     auditSingleTool(tool, tools)
   );
 
-  const totalSavings = results.reduce(
+  const totalMonthlySavings = results.reduce(
     (total, result) => total + result.savings,
     0
   );
 
+  const totalAnnualSavings = totalMonthlySavings * 12;
+
   return {
     results,
-    totalSavings,
+    totalMonthlySavings,
+    totalAnnualSavings,
     finalMessage:
-      totalSavings > 0
-        ? `You can save $${totalSavings.toFixed(2)} by switching to better alternatives.`
+      totalMonthlySavings > 0
+        ? `You can save $${totalMonthlySavings.toFixed(
+            2
+          )} per month and $${totalAnnualSavings.toFixed(
+            2
+          )} per year by switching to better alternatives.`
         : "Your current tools are already optimized.",
   };
 }

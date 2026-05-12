@@ -2,11 +2,14 @@
 import {useState,useEffect} from "react";
 import ToolCard from "@/components/ToolCard";
 import SummaryCards from "@/components/SummaryCards";
+import Link from "next/link";
 import {pricingData} from "@/data/pricing"
 import { useRouter } from "next/navigation";
+import { auditAllTools,AuditResult } from "@/lib/audit";
 
 export default function Audit(){
     type Tool={
+        id?:number,
         toolName:string,
         cost:string,
         plan:string,
@@ -50,18 +53,57 @@ export default function Audit(){
     const[isLoaded,setIsLoaded]=useState(false);
     const selectedTool=pricingData.find((tool)=>tool.name===form.toolName)
     const [auditResults, setAuditResults] = useState<any[]>([]);
+    const [summary, setSummary] = useState("");
+    const [auditData, setAuditData] = useState<{
+    results: AuditResult[];
+    totalMonthlySavings: number;
+    totalAnnualSavings: number;
+    finalMessage: string;
+} | null>(null);
 
     const router = useRouter();
-    //Handle audit button logic
-    function handleAudit() {
-        localStorage.setItem(
-            "auditTools",
-            JSON.stringify(tools)
-        );
 
-        router.push("/audit/result");
-        }
 
+async function handleAudit() {
+  const auditResult = auditAllTools(tools);
+
+  localStorage.setItem("auditTools", JSON.stringify(tools));
+
+  const response = await fetch("/api/summary", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      tools,
+      results: auditResult.results,
+      totalMonthlySavings: auditResult.totalMonthlySavings,
+      totalAnnualSavings: auditResult.totalAnnualSavings,
+    }),
+  });
+
+  const data = await response.json();
+
+  const auditResponse = await fetch("/api/auditRes", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      tools,
+      results: auditResult.results,
+      totalMonthlySavings: auditResult.totalMonthlySavings,
+      totalAnnualSavings: auditResult.totalAnnualSavings,
+      summary: data.summary,
+    }),
+  });
+
+  const savedAudit = await auditResponse.json();
+
+  router.push(`/auditRes/${savedAudit.audit.id}`);
+}
+
+    
 
     //save tools to localstorage when tools state changes
     useEffect(()=>{
@@ -69,6 +111,7 @@ export default function Audit(){
          localStorage.setItem("tools",JSON.stringify(tools))
         }
     },[tools,isLoaded])
+
 
     //loads tools from local storage when page opens
     useEffect(()=>{
@@ -78,6 +121,21 @@ export default function Audit(){
         }
         setIsLoaded(true);
     },[])
+
+    //loads tools from database when page opens
+        useEffect(() => {
+                async function fetchTools() {
+                    const response = await fetch("/api/tools");
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        setTools(data.data);
+                    }
+                }
+
+                fetchTools();
+            }, []);
         
 
     const filteredTools=filter==="All"?
@@ -107,10 +165,17 @@ export default function Audit(){
     }, 0);
 
 
+
+
     return(
         <div className="min-h-screen  mx-auto w-full  max-w-lg flex flex-col items-center bg-gray-100  shadow p-4 ">
             <h1 className="text-2xl font-bold m-4">SaaS Audit Tool</h1>
-
+            <Link
+                href="/"
+                className="inline-block bg-gray-800 text-white px-4 py-2 rounded mb-4"
+                >
+                Back to Home
+            </Link>
 
             <div>
               <SummaryCards
@@ -253,7 +318,7 @@ export default function Audit(){
                 value={form.cost}
                 readOnly
                 className="w-full px-3 py-2 rounded-lg shadow bg-white cursor-not-allowed"
-         />
+             />
          <br />
 
             <input
@@ -268,9 +333,10 @@ export default function Audit(){
 
           
         <div className="flex gap-3">
-        <button onClick={()=>
-        {
+        <button onClick={async()=>
 
+        {
+            
               if (form.toolName==="") {
                     setErrors({
                         ...errors,
@@ -340,27 +406,58 @@ export default function Audit(){
                     useCase: ""
                 });
 
-                setTools([...tools,form]);
+                const response = await fetch("/api/tools", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(form)
+                });
+
+
+                const data = await response.json();
+
+                    if (!data.success) {
+                    alert("Tool not saved to database");
+                    return;
+                }
+
+                setTools([...tools, data.data[0]]);
+
                 setForm({
-                    toolName:"",
-                    cost:"",
-                    plan:"",
-                    seats:"",
-                    useCase:""
-                })
+                toolName: "",
+                cost: "",
+                plan: "",
+                seats: "",
+                useCase: ""
+                });
              } 
 
         } 
+        
         className="bg-green-500 rounded px-3 py-1 text-white font-bold hover:bg-green-600 cursor-pointer">
             Add Tool
        </button>
             
 
         {/*clear all button*/}
-        <button onClick={()=>{
+        <button onClick={async()=>{
+            const response = await fetch("/api/tools", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    clearAll: true
+                })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
                 setTools([]);
-                localStorage.removeItem("tools");
-            }}
+                }
+        }}
                 className="bg-red-500 rounded px-3 py-1 text-white font-bold hover:bg-red-600 cursor-pointer ">
 
                 Clear All
@@ -430,10 +527,31 @@ export default function Audit(){
                    <ToolCard
                    key={index}
                    tool={tool}
-                   onRemove={()=>
-                   {
-                    setTools(tools.filter((_, i) => i !== index))
-                   }
+                   onRemove={async () => {
+
+                        const response = await fetch("/api/tools", {
+                            method: "DELETE",
+
+                            headers: {
+                            "Content-Type": "application/json"
+                            },
+
+                            body: JSON.stringify({
+                            id: tool.id
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            setTools(
+                            tools.filter(
+                                (item) => item.id !== tool.id
+                            )
+                            );
+                        }
+
+                        }
                 }
                    />
                 ))

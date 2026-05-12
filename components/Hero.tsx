@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Hero(){
   return (
-    <div className="p-10 min-h-screen flex flex-col justify-center items-center bg-black text-white text-center">
+    <div className="p-10 min-h-screen flex flex-col justify-center items-center bg-gray-600 text-white text-center">
         <h1 className="text-4xl font-bold md:text-6xl">
             Credix Audit Tool
         </h1>

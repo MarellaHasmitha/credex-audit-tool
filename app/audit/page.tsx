@@ -156,9 +156,9 @@ async function handleAudit() {
             return sum + Number(tool.seats);
        }, 0);
 
-    const enterpriseTools = tools.reduce((count, tool) => {
-           const seats = Number(tool.seats);
-            if (seats > 4) {
+    const paidTools = tools.reduce((count, tool) => {
+           const cost = Number(tool.cost);
+            if (cost > 0) {
                 return count + 1;
             }
          return count;
@@ -182,7 +182,7 @@ async function handleAudit() {
                     totalTools={tools.length}
                     totalCost={totalCost}
                     totalSeats={totalSeats}
-                    enterpriseTools={enterpriseTools}
+                    paidTools={paidTools}
                 />
             </div>
            

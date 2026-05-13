@@ -17,7 +17,7 @@ export default function ToolCard({
 }: ToolCardProps) {
 
   return (
-    <div className="p-3 rounded m-3  bg-white shadow hover:shadow-lg transition ">
+    <div className="p-3 rounded m-3  bg-white shadow hover:shadow-lg transition">
 
       <p>Tool Name: {tool.toolName}</p>
 

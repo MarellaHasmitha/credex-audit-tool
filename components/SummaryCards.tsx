@@ -2,7 +2,7 @@ type SummaryProps={
     totalTools:number;
     totalCost:number;
     totalSeats:number;
-    enterpriseTools:number;
+    paidTools:number;
 };
 
 export default function SummaryCards(
@@ -10,11 +10,11 @@ export default function SummaryCards(
     totalTools,
      totalCost,
      totalSeats,
-     enterpriseTools
+     paidTools
     }:SummaryProps){
         return(
             
-        <div className="grid grid-cols-2 gap-3 mb-5 w-full">
+        <div className="grid grid-cols-2 md:grid-cols-2 gap-5 mb-5  max-w-xl mx-auto">
 
         <div className="bg-white shadow rounded p-3 text-center">
             <p>Total Tools</p>
@@ -32,8 +32,8 @@ export default function SummaryCards(
         </div>
 
         <div className="bg-white shadow rounded p-3 text-center">
-            <p>Enterprise Tools</p>
-            <h2 className="font-bold text-xl">{enterpriseTools}</h2>
+            <p>Paid Tools</p>
+            <h2 className="font-bold text-xl">{paidTools}</h2>
         </div>
 
         </div>

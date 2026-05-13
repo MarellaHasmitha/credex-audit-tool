@@ -61,7 +61,7 @@ export default function LeadForm() {
   return (
     <form
       onSubmit={handleLeadSubmit}
-      className="mt-6 border rounded p-4 bg-white shadow"
+     className="mt-6 mx-auto w-fit rounded-lg p-4 bg-white shadow"
     >
       <h2 className="text-xl font-bold mb-3">
         Get Your Full Report
